@@ -1,6 +1,6 @@
 % Catch-All for logging
 check(_, _, State, _, Exp) :-
-    writef('\n%t : Currently evaluating %t', [State, Exp]),
+    writef('\n%t : %t', [State, Exp]),
     fail.
 
 check(_, Labels, State, _, Exp) :-
@@ -29,8 +29,7 @@ check(Transitions, Labels, State, Blocked, af(Exp)) :-
 
 check(Transitions, Labels, State, Blocked, af(Exp)) :-
     next(Transitions, State, Blocked, Next),
-    append(Blocked, State, NewBlocked),
-    all(Next, Var, check(Transitions, Labels, Var, NewBlocked, af(Exp))).
+    all(Next, Var, check(Transitions, Labels, Var, [State|Blocked], af(Exp))).
 
 check(Transitions, Labels, State, Blocked, ag(Exp)) :-
     member(State, Blocked),
@@ -42,10 +41,10 @@ check(Transitions, Labels, State, Blocked, ag(Exp)) :-
     next(Transitions, State, [State|Blocked], Next),
     all(Next, Var, check(Transitions, Labels, Var, [Var|[State|Blocked]], ag(Exp))).
 
-check(Transitions, Labels, State, Blocked, ex(Exp)) :-
-    next(Transitions, State, Blocked, Possible),
+check(Transitions, Labels, State, _, ex(Exp)) :-
+    next(Transitions, State, [], Possible),
     member(Next, Possible),
-    check(Transitions, Labels, Next, [Next|Blocked], Exp).
+    check(Transitions, Labels, Next, [State], Exp).
 
 check(Transitions, Labels, State, Blocked, ef(Exp)) :-
     check(Transitions, Labels, State, Blocked, Exp).
@@ -56,15 +55,15 @@ check(Transitions, Labels, State, Blocked, ef(Exp)) :-
     check(Transitions, Labels, Var, Path, Exp).
 
 check(Transitions, Labels, State, Blocked, eg(Exp)) :-
+    %write(Blocked),
     member(State, Blocked),
     check(Transitions, Labels, State, Blocked, Exp).
 
 check(Transitions, Labels, State, Blocked, eg(Exp)) :-
     not(member(State, Blocked)),
     check(Transitions, Labels, State, Blocked, Exp),
-    append(Blocked, State, NewBlocked),
-    traverse(Transitions, State, NewBlocked, Path, Var),
-    check(Transitions, Labels, Var, Path, Exp).
+    traverse(Transitions, State, Blocked, Path, Var),
+    check(Transitions, Labels, Var, [State|Blocked], eg(Exp)).
 
 %check(_, L, S, [], X) :- ...
 %check(_, L, S, [], neg(X)) :- ...
