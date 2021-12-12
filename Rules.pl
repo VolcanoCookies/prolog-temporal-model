@@ -12,8 +12,8 @@ check(Transitions, Labels, State, Blocked, neg(Exp)) :-
     not(check(Transitions, Labels, State, Blocked, Exp)).
 
 check(Transitions, Labels, State, Blocked, and(Exp1, Exp2)) :-
-    check(Transitions, Labels, State, Blocked, Exp1),
-    check(Transitions, Labels, State, Blocked, Exp2).
+    check(Transitions, Labels, State, [], Exp1),
+    check(Transitions, Labels, State, [], Exp2).
 
 check(Transitions, Labels, State, Blocked, or(Exp1, Exp2)) :-
     (check(Transitions, Labels, State, Blocked, Exp1);
@@ -24,8 +24,8 @@ check(Transitions, Labels, State, Blocked, ax(Exp)) :-
     all(Possible, Var, check(Transitions, Labels, Var, [], Exp)).
 
 check(Transitions, Labels, State, Blocked, af(Exp)) :-
-    not(member(State, Blocked)),
-    check(Transitions, Labels, State, Blocked, Exp).
+    not(member(State, [])),
+    check(Transitions, Labels, State, [], Exp).
 
 check(Transitions, Labels, State, Blocked, af(Exp)) :-
     next(Transitions, State, Blocked, Next),
@@ -37,9 +37,9 @@ check(Transitions, Labels, State, Blocked, ag(Exp)) :-
 
 check(Transitions, Labels, State, Blocked, ag(Exp)) :-
     not(member(State, Blocked)),
-    check(Transitions, Labels, State, Blocked, Exp),
+    check(Transitions, Labels, State, [], Exp),
     next(Transitions, State, [State|Blocked], Next),
-    all(Next, Var, check(Transitions, Labels, Var, [Var|[State|Blocked]], ag(Exp))).
+    all(Next, Var, check(Transitions, Labels, Var, [State|Blocked], ag(Exp))).
 
 check(Transitions, Labels, State, _, ex(Exp)) :-
     next(Transitions, State, [], Possible),
@@ -47,7 +47,8 @@ check(Transitions, Labels, State, _, ex(Exp)) :-
     check(Transitions, Labels, Next, [State], Exp).
 
 check(Transitions, Labels, State, Blocked, ef(Exp)) :-
-    check(Transitions, Labels, State, Blocked, Exp).
+    not(member(State, Blocked)),
+    check(Transitions, Labels, State, [], Exp).
 
 check(Transitions, Labels, State, Blocked, ef(Exp)) :-
     traverse(Transitions, State, Blocked, Path, Var),
@@ -55,14 +56,15 @@ check(Transitions, Labels, State, Blocked, ef(Exp)) :-
     check(Transitions, Labels, Var, Path, Exp).
 
 check(Transitions, Labels, State, Blocked, eg(Exp)) :-
-    %write(Blocked),
     member(State, Blocked),
     check(Transitions, Labels, State, Blocked, Exp).
 
 check(Transitions, Labels, State, Blocked, eg(Exp)) :-
     not(member(State, Blocked)),
-    check(Transitions, Labels, State, Blocked, Exp),
-    traverse(Transitions, State, Blocked, Path, Var),
+    check(Transitions, Labels, State, [], Exp),
+    next(Transitions, State, [], Next),
+    member(Var, Next),
+    %traverse(Transitions, State, Blocked, Path, Var),
     check(Transitions, Labels, Var, [State|Blocked], eg(Exp)).
 
 %check(_, L, S, [], X) :- ...
