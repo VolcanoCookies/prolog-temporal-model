@@ -11,7 +11,7 @@ check(_, Labels, State, _, Exp) :-
 check(Transitions, Labels, State, Blocked, neg(Exp)) :-
     not(check(Transitions, Labels, State, Blocked, Exp)).
 
-check(Transitions, Labels, State, Blocked, and(Exp1, Exp2)) :-
+check(Transitions, Labels, State, _, and(Exp1, Exp2)) :-
     check(Transitions, Labels, State, [], Exp1),
     check(Transitions, Labels, State, [], Exp2).
 
@@ -19,7 +19,7 @@ check(Transitions, Labels, State, Blocked, or(Exp1, Exp2)) :-
     (check(Transitions, Labels, State, Blocked, Exp1);
     check(Transitions, Labels, State, Blocked, Exp2)).
 
-check(Transitions, Labels, State, Blocked, ax(Exp)) :-
+check(Transitions, Labels, State, _, ax(Exp)) :-
     next(Transitions, State, [], Possible),
     not(empty(Possible)),
     all(Possible, Var, check(Transitions, Labels, Var, [], Exp)).
@@ -56,8 +56,6 @@ check(Transitions, Labels, State, Blocked, ef(Exp)) :-
 
 check(Transitions, Labels, State, Blocked, ef(Exp)) :-
     not(member(State, Blocked)),
-    %traverse(Transitions, State, Blocked, Path, Var),
-    %not(Var = State),
     next(Transitions, State, [], Next),
     member(Var, Next),
     check(Transitions, Labels, Var, [State|Blocked], ef(Exp)).
@@ -71,17 +69,4 @@ check(Transitions, Labels, State, Blocked, eg(Exp)) :-
     check(Transitions, Labels, State, [], Exp),
     next(Transitions, State, [], Next),
     member(Var, Next),
-    %traverse(Transitions, State, Blocked, Path, Var),
     check(Transitions, Labels, Var, [State|Blocked], eg(Exp)).
-
-%check(_, L, S, [], X) :- ...
-%check(_, L, S, [], neg(X)) :- ...
-% And
-%check(T, L, S, [], and(F,G)) :- ...
-% Or
-% AX
-% EX
-% AG
-% EG
-% EF
-% AF

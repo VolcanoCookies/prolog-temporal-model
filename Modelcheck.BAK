@@ -25,7 +25,6 @@ verify(Input) :-
     test_file(Input).
 
 test_file(File) :-
-    nb_setval(counter, 0),
     see(File), read(T), read(L), read(S), read(F), seen,
     (check(T, L, S, [], F), writef('\n%t passed', [File]);
     writef('\n%t failed', [File]), fail).
