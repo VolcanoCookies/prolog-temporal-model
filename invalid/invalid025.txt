@@ -9,4 +9,3 @@
 s1.
 
 and(ag(ag(p)),eg(af(q))).
-

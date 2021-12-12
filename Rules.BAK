@@ -1,6 +1,6 @@
 % Catch-All for logging
 check(_, _, State, _, Exp) :-
-    writef('\n%t : %t', [State, Exp]),
+    %writef('\n%t : %t', [State, Exp]),
     fail.
 
 check(_, Labels, State, _, Exp) :-
@@ -21,24 +21,28 @@ check(Transitions, Labels, State, Blocked, or(Exp1, Exp2)) :-
 
 check(Transitions, Labels, State, Blocked, ax(Exp)) :-
     next(Transitions, State, [], Possible),
+    not(empty(Possible)),
     all(Possible, Var, check(Transitions, Labels, Var, [], Exp)).
 
 check(Transitions, Labels, State, Blocked, af(Exp)) :-
-    not(member(State, [])),
-    check(Transitions, Labels, State, Blocked, Exp).
+    not(member(State, Blocked)),
+    check(Transitions, Labels, State, [], Exp).
 
 check(Transitions, Labels, State, Blocked, af(Exp)) :-
-    next(Transitions, State, Blocked, Next),
+    not(member(State, Blocked)),
+    next(Transitions, State, [State|Blocked], Next),
+    not(empty(Next)),
     all(Next, Var, check(Transitions, Labels, Var, [State|Blocked], af(Exp))).
 
 check(Transitions, Labels, State, Blocked, ag(Exp)) :-
     member(State, Blocked),
-    check(Transitions, Labels, State, Blocked, Exp).
+    check(Transitions, Labels, State, [], Exp).
 
 check(Transitions, Labels, State, Blocked, ag(Exp)) :-
     not(member(State, Blocked)),
     check(Transitions, Labels, State, [], Exp),
-    next(Transitions, State, [State|Blocked], Next),
+    next(Transitions, State, [], Next),
+    not(empty(Next)),
     all(Next, Var, check(Transitions, Labels, Var, [State|Blocked], ag(Exp))).
 
 check(Transitions, Labels, State, _, ex(Exp)) :-
@@ -51,13 +55,16 @@ check(Transitions, Labels, State, Blocked, ef(Exp)) :-
     check(Transitions, Labels, State, [], Exp).
 
 check(Transitions, Labels, State, Blocked, ef(Exp)) :-
-    traverse(Transitions, State, Blocked, Path, Var),
-    not(Var = State),
-    check(Transitions, Labels, Var, Path, Exp).
+    not(member(State, Blocked)),
+    %traverse(Transitions, State, Blocked, Path, Var),
+    %not(Var = State),
+    next(Transitions, State, [], Next),
+    member(Var, Next),
+    check(Transitions, Labels, Var, [State|Blocked], ef(Exp)).
 
 check(Transitions, Labels, State, Blocked, eg(Exp)) :-
     member(State, Blocked),
-    check(Transitions, Labels, State, Blocked, Exp).
+    check(Transitions, Labels, State, [], Exp).
 
 check(Transitions, Labels, State, Blocked, eg(Exp)) :-
     not(member(State, Blocked)),
